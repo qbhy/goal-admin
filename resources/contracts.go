@@ -1,0 +1,89 @@
+package resources
+
+import (
+	"database/sql"
+	"github.com/goal-web/contracts"
+)
+
+// ProTableColumn 定义了一个与 Pro Table 列对应的 Go 结构体
+type ProTableColumn struct {
+	Title              string      `json:"title,omitempty"`     // 列的标题
+	DataIndex          string      `json:"dataIndex,omitempty"` // 数据索引
+	ValueType          string      `json:"valueType,omitempty"` // 值类型
+	Ellipsis           bool        `json:"ellipsis,omitempty"`
+	Tooltip            string      `json:"tooltip,omitempty"`
+	Copyable           bool        `json:"copyable,omitempty"`
+	ValueEnum          map[any]any `json:"value_enum,omitempty"`
+	Order              int         `json:"order,omitempty"`
+	Search             bool        `json:"search,omitempty"`
+	ColSize            int         `json:"colSize,omitempty"`
+	HideInSearch       bool        `json:"hideInSearch,omitempty"`
+	HideInTable        bool        `json:"hideInTable,omitempty"`
+	HideInForm         bool        `json:"hideInForm,omitempty"`
+	HideInDescriptions bool        `json:"hideInDescriptions,omitempty"`
+	Filters            bool        `json:"filters,omitempty"`
+	InitialValue       any         `json:"initialValue,omitempty"`
+	Disable            bool        `json:"disable,omitempty"`
+	Render             string      `json:"render,omitempty"` // 渲染函数
+}
+
+// Pagination 定义了分页配置
+type Pagination struct {
+	ShowQuickJumper bool `json:"showQuickJumper,omitempty"`
+	PageSize        int  `json:"pageSize,omitempty"`
+	Current         int  `json:"current,omitempty"`
+	Total           int  `json:"total,omitempty"`
+}
+
+// ProTableProps 定义了 Pro Table 的所有属性
+type ProTableProps struct {
+	Columns       []ProTableColumn       `json:"columns,omitempty"`
+	RowKey        string                 `json:"rowKey,omitempty"`
+	Pagination    *Pagination            `json:"pagination,omitempty"`
+	Search        map[string]interface{} `json:"search,omitempty"`
+	DateFormatter string                 `json:"dateFormatter,omitempty"`
+	HeaderTitle   string                 `json:"headerTitle,omitempty"`
+	Options       map[string]interface{} `json:"options,omitempty"`
+	Params        map[string]interface{} `json:"params,omitempty"`
+}
+
+type ResourceQueryParams struct {
+	Current  int64                          `json:"current"`
+	PageSize int64                          `json:"pageSize"`
+	Sort     map[string]contracts.OrderType `json:"sort"`
+	Filter   map[string]ResourceQueryFilter `json:"filter"`
+}
+
+type ResourceQueryFilter struct {
+	Condition string `json:"condition"`
+	Value     any    `json:"value"`
+}
+
+type Resource interface {
+	GetTitle() string
+	GetName() string
+	GetRowKey() string
+	GetMeta() (ProTableProps, contracts.Exception)
+	Delete(id int) contracts.Exception
+	Update(id int, fields contracts.Fields) contracts.Exception
+	Query(params ResourceQueryParams) (contracts.Collection[*contracts.Fields], int64)
+}
+
+type Factory interface {
+	Extend(resource Resource)
+	Get(name string) Resource
+	GetProTablePropsListFromDB() ([]ProTableProps, contracts.Exception)
+	GetProTablePropsListFromFs() ([]ProTableProps, contracts.Exception)
+	GetProTablePropsFromDB(table string) (ProTableProps, contracts.Exception)
+	GetResources() map[string]Resource
+}
+
+// ColumnInfo 结构体用于存储表的列信息
+type ColumnInfo struct {
+	Field   string         `db:"Field"`
+	Type    string         `db:"Type"`
+	Null    string         `db:"Null"`
+	Key     string         `db:"Key"`
+	Default sql.NullString `db:"Default"`
+	Extra   string         `db:"Extra"`
+}
