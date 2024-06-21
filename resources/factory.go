@@ -38,8 +38,8 @@ func (factory *ResourceFactory) GetResources() map[string]Resource {
 	return factory.resources
 }
 
-func (factory *ResourceFactory) GetProTablePropsListFromFs() ([]ProTableProps, contracts.Exception) {
-	var list []ProTableProps
+func (factory *ResourceFactory) GetProTablePropsListFromFs() ([]*ProTableProps, contracts.Exception) {
+	var list []*ProTableProps
 
 	for _, file := range factory.fs.Files("") {
 		var props ProTableProps
@@ -47,19 +47,19 @@ func (factory *ResourceFactory) GetProTablePropsListFromFs() ([]ProTableProps, c
 		if err != nil {
 			return nil, exceptions.WithError(err)
 		}
-		list = append(list, props)
+		list = append(list, &props)
 	}
 	return list, nil
 }
 
-func (factory *ResourceFactory) GetProTablePropsListFromDB() ([]ProTableProps, contracts.Exception) {
+func (factory *ResourceFactory) GetProTablePropsListFromDB() ([]*ProTableProps, contracts.Exception) {
 	var tables []string
 	err := factory.db.Select(&tables, "show tables;")
 	if err != nil {
 		return nil, err
 	}
 
-	var list []ProTableProps
+	var list []*ProTableProps
 	for _, table := range tables {
 		pro, dbErr := factory.GetProTablePropsFromDB(table)
 		if dbErr != nil {
@@ -70,17 +70,16 @@ func (factory *ResourceFactory) GetProTablePropsListFromDB() ([]ProTableProps, c
 	return list, nil
 }
 
-func (factory *ResourceFactory) GetProTablePropsFromDB(table string) (ProTableProps, contracts.Exception) {
+func (factory *ResourceFactory) GetProTablePropsFromDB(table string) (*ProTableProps, contracts.Exception) {
 	var columns []ColumnInfo
-	var pro ProTableProps
 	err := factory.db.Select(&columns, fmt.Sprintf("describe `%s`", table))
 	if err != nil {
-		return pro, err
+		return nil, err
 	}
 	return makeProTableProps(table, columns), nil
 }
 
-func makeProTableProps(table string, columns []ColumnInfo) ProTableProps {
+func makeProTableProps(table string, columns []ColumnInfo) *ProTableProps {
 	var pro = ProTableProps{
 		HeaderTitle: table,
 	}
@@ -90,7 +89,7 @@ func makeProTableProps(table string, columns []ColumnInfo) ProTableProps {
 		if column.Key == "PRI" {
 			pro.RowKey = column.Field
 		}
-		pro.Columns = append(pro.Columns, ProTableColumn{
+		pro.Columns = append(pro.Columns, &ProTableColumn{
 			Title:        column.Field,
 			DataIndex:    column.Field,
 			ValueType:    fieldTypeToGoType(column.Type),
@@ -98,5 +97,5 @@ func makeProTableProps(table string, columns []ColumnInfo) ProTableProps {
 		})
 	}
 
-	return pro
+	return &pro
 }

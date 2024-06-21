@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/goal-web/contracts"
 	"github.com/goal-web/supports/commands"
-	"strings"
 )
 
 func ScanResources(app contracts.Application) contracts.Command {
@@ -28,23 +27,14 @@ type scanResources struct {
 
 func fieldTypeToGoType(fieldType string) string {
 	switch fieldType {
-	case "int", "bigint", "float", "double":
-		return "number"
 	case "json":
 		return "object"
-	case "binary":
-		return "string"
 	case "date", "datetime", "timestamp":
 		return "dateTime"
 	case "boolean":
 		return "boolean"
 	default:
-		if strings.HasPrefix(fieldType, "varchar") ||
-			strings.HasPrefix(fieldType, "nvarchar") ||
-			strings.HasPrefix(fieldType, "text") {
-			return "string"
-		}
-		return "any" // Fallback type
+		return "" // Fallback type
 	}
 }
 

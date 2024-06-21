@@ -10,6 +10,9 @@ type Base struct {
 	Name   string
 	RowKey string
 	Title  string
+	Labels map[string]string
+
+	ColumnWrapper func(column *ProTableColumn)
 }
 
 func (base Base) GetName() string {
@@ -24,8 +27,23 @@ func (base Base) GetTitle() string {
 	return base.Title
 }
 
-func (base Base) GetMeta() (ProTableProps, contracts.Exception) {
+func (base Base) GetMeta() (*ProTableProps, contracts.Exception) {
 	props, err := application.Get("resources").(Factory).GetProTablePropsFromDB(base.Name)
+	props.HeaderTitle = base.Title
+	if err == nil && base.Labels != nil {
+		for _, col := range props.Columns {
+			if label, exists := base.Labels[col.DataIndex]; exists {
+				col.Title = label
+			}
+		}
+	}
+
+	if props != nil && base.ColumnWrapper != nil {
+		for _, col := range props.Columns {
+			base.ColumnWrapper(col)
+		}
+	}
+
 	return props, err
 }
 

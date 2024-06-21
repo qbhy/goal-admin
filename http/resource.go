@@ -1,13 +1,20 @@
 package http
 
 import (
+	"encoding/json"
+	"fmt"
 	"github.com/goal-web/contracts"
 	"github.com/qbhy/goal-admin/resources"
 )
 
 func GetResourceList(request contracts.HttpRequest, factory resources.Factory) any {
 	var params resources.ResourceQueryParams
-	err := request.Parse(&params)
+	err := json.Unmarshal([]byte(fmt.Sprintf(`{"current": %d, "pageSize": %d, "sort": %s, "filter": %s}`,
+		request.IntOptional("current", 1),
+		request.IntOptional("pageSize", 1),
+		request.StringOptional("sort", "{}"),
+		request.StringOptional("filter", "{}"),
+	)), &params)
 	if err != nil {
 		return contracts.Fields{"err_msg": err.Error()}
 	}
@@ -19,7 +26,7 @@ func GetResourceList(request contracts.HttpRequest, factory resources.Factory) a
 	list, total := resource.Query(params)
 
 	return contracts.Fields{
-		"data":  list,
+		"data":  list.ToArray(),
 		"total": total,
 	}
 }

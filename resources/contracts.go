@@ -7,24 +7,24 @@ import (
 
 // ProTableColumn 定义了一个与 Pro Table 列对应的 Go 结构体
 type ProTableColumn struct {
-	Title              string      `json:"title,omitempty"`     // 列的标题
-	DataIndex          string      `json:"dataIndex,omitempty"` // 数据索引
-	ValueType          string      `json:"valueType,omitempty"` // 值类型
-	Ellipsis           bool        `json:"ellipsis,omitempty"`
-	Tooltip            string      `json:"tooltip,omitempty"`
-	Copyable           bool        `json:"copyable,omitempty"`
-	ValueEnum          map[any]any `json:"value_enum,omitempty"`
-	Order              int         `json:"order,omitempty"`
-	Search             bool        `json:"search,omitempty"`
-	ColSize            int         `json:"colSize,omitempty"`
-	HideInSearch       bool        `json:"hideInSearch,omitempty"`
-	HideInTable        bool        `json:"hideInTable,omitempty"`
-	HideInForm         bool        `json:"hideInForm,omitempty"`
-	HideInDescriptions bool        `json:"hideInDescriptions,omitempty"`
-	Filters            bool        `json:"filters,omitempty"`
-	InitialValue       any         `json:"initialValue,omitempty"`
-	Disable            bool        `json:"disable,omitempty"`
-	Render             string      `json:"render,omitempty"` // 渲染函数
+	Title              string         `json:"title,omitempty"`     // 列的标题
+	DataIndex          string         `json:"dataIndex,omitempty"` // 数据索引
+	ValueType          string         `json:"valueType,omitempty"` // 值类型
+	Ellipsis           bool           `json:"ellipsis,omitempty"`
+	Tooltip            string         `json:"tooltip,omitempty"`
+	Copyable           bool           `json:"copyable,omitempty"`
+	ValueEnum          map[string]any `json:"valueEnum,omitempty"`
+	Order              int            `json:"order,omitempty"`
+	Search             bool           `json:"search,omitempty"`
+	ColSize            int            `json:"colSize,omitempty"`
+	HideInSearch       bool           `json:"hideInSearch,omitempty"`
+	HideInTable        bool           `json:"hideInTable,omitempty"`
+	HideInForm         bool           `json:"hideInForm,omitempty"`
+	HideInDescriptions bool           `json:"hideInDescriptions,omitempty"`
+	Filters            bool           `json:"filters,omitempty"`
+	InitialValue       any            `json:"initialValue,omitempty"`
+	Disable            bool           `json:"disable,omitempty"`
+	Render             string         `json:"render,omitempty"` // 渲染函数
 }
 
 // Pagination 定义了分页配置
@@ -37,12 +37,13 @@ type Pagination struct {
 
 // ProTableProps 定义了 Pro Table 的所有属性
 type ProTableProps struct {
-	Columns       []ProTableColumn       `json:"columns,omitempty"`
+	Columns       []*ProTableColumn      `json:"columns,omitempty"`
 	RowKey        string                 `json:"rowKey,omitempty"`
 	Pagination    *Pagination            `json:"pagination,omitempty"`
 	Search        map[string]interface{} `json:"search,omitempty"`
 	DateFormatter string                 `json:"dateFormatter,omitempty"`
 	HeaderTitle   string                 `json:"headerTitle,omitempty"`
+	SubTitle      string                 `json:"subTitle,omitempty"`
 	Options       map[string]interface{} `json:"options,omitempty"`
 	Params        map[string]interface{} `json:"params,omitempty"`
 }
@@ -63,7 +64,7 @@ type Resource interface {
 	GetTitle() string
 	GetName() string
 	GetRowKey() string
-	GetMeta() (ProTableProps, contracts.Exception)
+	GetMeta() (*ProTableProps, contracts.Exception)
 	Delete(id int) contracts.Exception
 	Update(id int, fields contracts.Fields) contracts.Exception
 	Query(params ResourceQueryParams) (contracts.Collection[*contracts.Fields], int64)
@@ -72,9 +73,9 @@ type Resource interface {
 type Factory interface {
 	Extend(resource Resource)
 	Get(name string) Resource
-	GetProTablePropsListFromDB() ([]ProTableProps, contracts.Exception)
-	GetProTablePropsListFromFs() ([]ProTableProps, contracts.Exception)
-	GetProTablePropsFromDB(table string) (ProTableProps, contracts.Exception)
+	GetProTablePropsListFromDB() ([]*ProTableProps, contracts.Exception)
+	GetProTablePropsListFromFs() ([]*ProTableProps, contracts.Exception)
+	GetProTablePropsFromDB(table string) (*ProTableProps, contracts.Exception)
 	GetResources() map[string]Resource
 }
 
