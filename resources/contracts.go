@@ -10,20 +10,21 @@ type ProTableColumn struct {
 	Title              string         `json:"title,omitempty"`     // 列的标题
 	DataIndex          string         `json:"dataIndex,omitempty"` // 数据索引
 	ValueType          string         `json:"valueType,omitempty"` // 值类型
-	Ellipsis           bool           `json:"ellipsis,omitempty"`
+	Ellipsis           bool           `json:"ellipsis"`
 	Tooltip            string         `json:"tooltip,omitempty"`
 	Copyable           bool           `json:"copyable,omitempty"`
 	ValueEnum          map[string]any `json:"valueEnum,omitempty"`
-	Order              int            `json:"order,omitempty"`
-	Search             bool           `json:"search,omitempty"`
+	Order              int            `json:"order,omitempty"` // 查询表单中的权重，权重大排序靠前
+	Search             bool           `json:"search"`
 	ColSize            int            `json:"colSize,omitempty"`
-	HideInSearch       bool           `json:"hideInSearch,omitempty"`
-	HideInTable        bool           `json:"hideInTable,omitempty"`
-	HideInForm         bool           `json:"hideInForm,omitempty"`
-	HideInDescriptions bool           `json:"hideInDescriptions,omitempty"`
-	Filters            bool           `json:"filters,omitempty"`
+	HideInSearch       bool           `json:"hideInSearch"`
+	HideInTable        bool           `json:"hideInTable"`
+	Sorter             bool           `json:"sorter"`
+	HideInForm         bool           `json:"hideInForm"`
+	HideInDescriptions bool           `json:"hideInDescriptions"`
+	Filters            bool           `json:"filters"`
 	InitialValue       any            `json:"initialValue,omitempty"`
-	Disable            bool           `json:"disable,omitempty"`
+	Disable            bool           `json:"disable"`
 	Render             string         `json:"render,omitempty"` // 渲染函数
 }
 
@@ -53,7 +54,7 @@ type ResourceQueryParams struct {
 	Current  int64                          `json:"current"`
 	PageSize int64                          `json:"pageSize"`
 	Sort     map[string]contracts.OrderType `json:"sort"`
-	Filter   map[string]ResourceQueryFilter `json:"filter"`
+	Filter   map[string]any                 `json:"filter"`
 }
 
 type ResourceQueryFilter struct {
