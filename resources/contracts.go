@@ -74,9 +74,9 @@ type Resource interface {
 type Factory interface {
 	ExtendResource(resource Resource)
 	GetResource(name string) (Resource, contracts.Exception)
-	GetProTablePropsListFromDB() ([]*ProTableProps, contracts.Exception)
+	GetResourceListFromDB() ([]*Base, contracts.Exception)
 	GetProTablePropsListFromFs() ([]*ProTableProps, contracts.Exception)
-	GetProTablePropsFromDB(table string) (*ProTableProps, contracts.Exception)
+	GetResourceFromDB(table string) (*Base, contracts.Exception)
 	GetMenuList() []MenuDataItem
 	SaveMenuList(list []MenuDataItem) contracts.Exception
 	SaveResource(resource Resource) contracts.Exception

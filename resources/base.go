@@ -7,9 +7,8 @@ import (
 )
 
 type Base struct {
+	*ProTableProps
 	Name          string                       `json:"name"`
-	RowKey        string                       `json:"row_key"`
-	Title         string                       `json:"title"`
 	Labels        map[string]string            `json:"labels"`
 	ValueEnum     map[string]contracts.Fields  `json:"value_enum"`
 	HideInTable   []string                     `json:"hide_in_table"`
@@ -25,40 +24,43 @@ func (base Base) GetRowKey() string {
 }
 
 func (base Base) GetTitle() string {
-	return base.Title
+	return base.HeaderTitle
 }
 
 func (base Base) GetMeta() (*ProTableProps, contracts.Exception) {
-	props, err := application.Get("resources").(Factory).GetProTablePropsFromDB(base.Name)
-	if err == nil {
-		props.HeaderTitle = base.Title
-
-		for _, col := range props.Columns {
-			if base.Labels != nil {
-				if label, exists := base.Labels[col.DataIndex]; exists {
-					col.Title = label
-				}
+	if base.Columns == nil {
+		dbRes, err := application.Get("resources").(Factory).GetResourceFromDB(base.Name)
+		if err != nil {
+			return nil, err
+		}
+		if dbRes != nil {
+			base.Columns = dbRes.Columns
+		}
+	}
+	for _, col := range base.Columns {
+		if base.Labels != nil {
+			if label, exists := base.Labels[col.DataIndex]; exists {
+				col.Title = label
 			}
-			if base.ValueEnum != nil {
-				if value, exists := base.ValueEnum[col.DataIndex]; exists {
-					col.ValueEnum = value
-				}
+		}
+		if base.ValueEnum != nil {
+			if value, exists := base.ValueEnum[col.DataIndex]; exists {
+				col.ValueEnum = value
 			}
-			for _, field := range base.HideInTable {
-				if col.DataIndex == field {
-					col.HideInTable = true
-				}
+		}
+		for _, field := range base.HideInTable {
+			if col.DataIndex == field {
+				col.HideInTable = true
 			}
 		}
 	}
-
-	if props != nil && base.ColumnWrapper != nil {
-		for _, col := range props.Columns {
+	if base.ColumnWrapper != nil {
+		for _, col := range base.Columns {
 			base.ColumnWrapper(col)
 		}
 	}
 
-	return props, err
+	return base.ProTableProps, nil
 }
 
 func (base Base) Delete(id int) contracts.Exception {

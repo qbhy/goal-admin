@@ -8,7 +8,7 @@ import (
 )
 
 func GetResourcesList(factory resources.Factory) any {
-	data, exception := factory.GetProTablePropsListFromDB()
+	data, exception := factory.GetResourceListFromDB()
 	if exception != nil {
 		return contracts.Fields{"err_msg": exception.Error()}
 	}
@@ -16,6 +16,21 @@ func GetResourcesList(factory resources.Factory) any {
 	return contracts.Fields{
 		"data": data,
 	}
+}
+
+func SaveResource(factory resources.Factory, request contracts.HttpRequest) any {
+	var base resources.Base
+	err := request.Parse(&base)
+	if err != nil {
+		return contracts.Fields{"err_msg": err.Error()}
+	}
+
+	exception := factory.SaveResource(base)
+	if exception != nil {
+		return contracts.Fields{"err_msg": exception.Error()}
+	}
+
+	return contracts.Fields{"data": nil}
 }
 
 func GetResourceList(request contracts.HttpRequest, factory resources.Factory) any {

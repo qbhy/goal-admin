@@ -24,7 +24,7 @@ func NewFactory(connection contracts.DBConnection, fs contracts.FileSystem) Fact
 		fs:        fs,
 	}
 
-	for _, file := range fs.Files("resources") {
+	for _, file := range fs.Files("list") {
 		var resource Base
 		if err := json.Unmarshal(file.Read(), &resource); err != nil {
 			logs.Default().WithField("file", file.Name()).WithError(err).Error("Failed to unmarshal resource")
@@ -74,12 +74,12 @@ func (factory *ResourceFactory) SaveMenuList(list []MenuDataItem) contracts.Exce
 }
 
 func (factory *ResourceFactory) GetMenuList() []MenuDataItem {
-	listStr, err := factory.fs.Get("menu/list.json")
+	listStr, err := factory.fs.Get("menu.json")
 	var menus []MenuDataItem
 	if err == nil {
 		err = json.Unmarshal([]byte(listStr), &menus)
 		if err != nil {
-			logs.Default().WithError(err).Error("Failed to parse menu list from menu/list.json")
+			logs.Default().WithError(err).Error("Failed to parse menu list from menu.json")
 		} else {
 			return menus
 		}
@@ -94,47 +94,60 @@ func (factory *ResourceFactory) GetMenuList() []MenuDataItem {
 	return menus
 }
 
-func (factory *ResourceFactory) GetProTablePropsListFromDB() ([]*ProTableProps, contracts.Exception) {
+func (factory *ResourceFactory) GetResourceListFromDB() ([]*Base, contracts.Exception) {
 	var tables []string
-	err := factory.db.Select(&tables, "show tables;")
-	if err != nil {
-		return nil, err
+	exception := factory.db.Select(&tables, "show tables;")
+	if exception != nil {
+		return nil, exception
 	}
 
-	var list []*ProTableProps
+	var list []*Base
 	for _, table := range tables {
-		pro, dbErr := factory.GetProTablePropsFromDB(table)
+		res, dbErr := factory.GetResourceFromDB(table)
 		if dbErr != nil {
 			return nil, dbErr
 		}
-		list = append(list, pro)
+		list = append(list, res)
 	}
 	return list, nil
 }
 
 func (factory *ResourceFactory) SaveResource(resource Resource) contracts.Exception {
+	if base, isBase := factory.resources[resource.GetName()].(*Base); isBase || base == nil {
+		factory.ExtendResource(resource)
+	}
+
 	jsonBytes, err := json.Marshal(resource)
 	if err != nil {
 		logs.Default().WithError(err).Error("Failed to encode json")
 		return exceptions.WithError(err)
 	}
-	err = factory.fs.Put(fmt.Sprintf("resources/%s.json", resource.GetName()), string(jsonBytes))
+	err = factory.fs.Put(fmt.Sprintf("list/%s.json", resource.GetName()), string(jsonBytes))
 	if err != nil {
 		logs.Default().WithError(err).Error("Failed to save resource")
 	}
 	return exceptions.WithError(err)
 }
 
-func (factory *ResourceFactory) GetProTablePropsFromDB(table string) (*ProTableProps, contracts.Exception) {
+func (factory *ResourceFactory) GetResourceFromDB(table string) (*Base, contracts.Exception) {
+	resBytes, err := factory.fs.Read(fmt.Sprintf("list/%s.json", table))
+	if err == nil {
+		var base Base
+		err = json.Unmarshal(resBytes, &base)
+		if err == nil {
+			return &base, nil
+		}
+	}
+
 	var columns []ColumnInfo
-	err := factory.db.Select(&columns, fmt.Sprintf("describe `%s`", table))
-	if err != nil {
-		return nil, err
+	exception := factory.db.Select(&columns, fmt.Sprintf("describe `%s`", table))
+	if exception != nil {
+		return nil, exception
 	}
 	return makeProTableProps(table, columns), nil
 }
 
-func makeProTableProps(table string, columns []ColumnInfo) *ProTableProps {
+func makeProTableProps(table string, columns []ColumnInfo) *Base {
 	var pro = ProTableProps{
 		HeaderTitle: table,
 	}
@@ -151,5 +164,8 @@ func makeProTableProps(table string, columns []ColumnInfo) *ProTableProps {
 		})
 	}
 
-	return &pro
+	return &Base{
+		Name:          table,
+		ProTableProps: &pro,
+	}
 }
