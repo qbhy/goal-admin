@@ -37,6 +37,7 @@ type Pagination struct {
 
 // ProTableProps 定义了 Pro Table 的所有属性
 type ProTableProps struct {
+	Actions       []string               `json:"actions,omitempty"`
 	Columns       []*ProTableColumn      `json:"columns,omitempty"`
 	RowKey        string                 `json:"rowKey,omitempty"`
 	Pagination    *Pagination            `json:"pagination,omitempty"`
@@ -71,12 +72,14 @@ type Resource interface {
 }
 
 type Factory interface {
-	Extend(resource Resource)
-	Get(name string) Resource
+	ExtendResource(resource Resource)
+	GetResource(name string) (Resource, contracts.Exception)
 	GetProTablePropsListFromDB() ([]*ProTableProps, contracts.Exception)
 	GetProTablePropsListFromFs() ([]*ProTableProps, contracts.Exception)
 	GetProTablePropsFromDB(table string) (*ProTableProps, contracts.Exception)
-	GetResources() map[string]Resource
+	GetMenuList() []MenuDataItem
+	SaveMenuList(list []MenuDataItem) contracts.Exception
+	SaveResource(resource Resource) contracts.Exception
 }
 
 // ColumnInfo 结构体用于存储表的列信息
@@ -87,4 +90,19 @@ type ColumnInfo struct {
 	Key     string         `db:"Key"`
 	Default sql.NullString `db:"Default"`
 	Extra   string         `db:"Extra"`
+}
+
+// MenuDataItem represents a menu item with various attributes.
+type MenuDataItem struct {
+	Children            []MenuDataItem         `json:"children,omitempty"`
+	HideChildrenInMenu  bool                   `json:"hideChildrenInMenu,omitempty"`
+	HideInMenu          bool                   `json:"hideInMenu,omitempty"`
+	Icon                string                 `json:"icon,omitempty"`
+	Locale              string                 `json:"locale,omitempty"`
+	Name                string                 `json:"name,omitempty"`
+	Key                 string                 `json:"key,omitempty"`
+	ProLayoutParentKeys []string               `json:"pro_layout_parentKeys,omitempty"`
+	Path                string                 `json:"path,omitempty"`
+	ParentKeys          []string               `json:"parentKeys,omitempty"`
+	ExtraFields         map[string]interface{} `json:"-"` // For additional fields
 }

@@ -7,12 +7,13 @@ import (
 )
 
 type Base struct {
-	Name   string
-	RowKey string
-	Title  string
-	Labels map[string]string
-
-	ColumnWrapper func(column *ProTableColumn)
+	Name          string                       `json:"name"`
+	RowKey        string                       `json:"row_key"`
+	Title         string                       `json:"title"`
+	Labels        map[string]string            `json:"labels"`
+	ValueEnum     map[string]contracts.Fields  `json:"value_enum"`
+	HideInTable   []string                     `json:"hide_in_table"`
+	ColumnWrapper func(column *ProTableColumn) `json:"-"`
 }
 
 func (base Base) GetName() string {
@@ -29,11 +30,24 @@ func (base Base) GetTitle() string {
 
 func (base Base) GetMeta() (*ProTableProps, contracts.Exception) {
 	props, err := application.Get("resources").(Factory).GetProTablePropsFromDB(base.Name)
-	props.HeaderTitle = base.Title
-	if err == nil && base.Labels != nil {
+	if err == nil {
+		props.HeaderTitle = base.Title
+
 		for _, col := range props.Columns {
-			if label, exists := base.Labels[col.DataIndex]; exists {
-				col.Title = label
+			if base.Labels != nil {
+				if label, exists := base.Labels[col.DataIndex]; exists {
+					col.Title = label
+				}
+			}
+			if base.ValueEnum != nil {
+				if value, exists := base.ValueEnum[col.DataIndex]; exists {
+					col.ValueEnum = value
+				}
+			}
+			for _, field := range base.HideInTable {
+				if col.DataIndex == field {
+					col.HideInTable = true
+				}
 			}
 		}
 	}

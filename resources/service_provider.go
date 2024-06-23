@@ -17,7 +17,7 @@ func (s ServiceProvider) Register(application contracts.Application) {
 		factory := NewFactory(connection, fs.Disk("resources"))
 
 		for _, res := range s.list {
-			factory.Extend(res)
+			factory.ExtendResource(res)
 		}
 
 		return factory

@@ -7,6 +7,17 @@ import (
 	"github.com/qbhy/goal-admin/resources"
 )
 
+func GetResourcesList(factory resources.Factory) any {
+	data, exception := factory.GetProTablePropsListFromDB()
+	if exception != nil {
+		return contracts.Fields{"err_msg": exception.Error()}
+	}
+
+	return contracts.Fields{
+		"data": data,
+	}
+}
+
 func GetResourceList(request contracts.HttpRequest, factory resources.Factory) any {
 	var params resources.ResourceQueryParams
 	err := json.Unmarshal([]byte(fmt.Sprintf(`{"current": %d, "pageSize": %d, "sort": %s, "filter": %s}`,
@@ -18,9 +29,9 @@ func GetResourceList(request contracts.HttpRequest, factory resources.Factory) a
 	if err != nil {
 		return contracts.Fields{"err_msg": err.Error()}
 	}
-	resource := factory.Get(request.Param("name"))
-	if resource == nil {
-		return contracts.Fields{"err_msg": "该资源不存在"}
+	resource, exception := factory.GetResource(request.Param("name"))
+	if exception != nil {
+		return contracts.Fields{"err_msg": exception.Error()}
 	}
 
 	list, total := resource.Query(params)
@@ -32,9 +43,9 @@ func GetResourceList(request contracts.HttpRequest, factory resources.Factory) a
 }
 
 func GetResourceMeta(request contracts.HttpRequest, factory resources.Factory) any {
-	resource := factory.Get(request.Param("name"))
-	if resource == nil {
-		return contracts.Fields{"err_msg": "该资源不存在"}
+	resource, exception := factory.GetResource(request.Param("name"))
+	if exception != nil {
+		return contracts.Fields{"err_msg": exception.Error()}
 	}
 	meta, err := resource.GetMeta()
 	if err != nil {
