@@ -23,7 +23,7 @@ type ProTableColumn struct {
 	HideInForm         bool           `json:"hideInForm"`
 	HideInDescriptions bool           `json:"hideInDescriptions"`
 	Filters            bool           `json:"filters"`
-	InitialValue       any            `json:"initialValue,omitempty"`
+	InitialValue       string         `json:"initialValue,omitempty"`
 	Disable            bool           `json:"disable"`
 	Render             string         `json:"render,omitempty"` // 渲染函数
 }
