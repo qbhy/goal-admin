@@ -7,6 +7,7 @@ import (
 
 // ProTableColumn 定义了一个与 Pro Table 列对应的 Go 结构体
 type ProTableColumn struct {
+	ValueTypeParams    map[string]any `json:"valueTypeParams,omitempty"`
 	Title              string         `json:"title,omitempty"`     // 列的标题
 	DataIndex          string         `json:"dataIndex,omitempty"` // 数据索引
 	ValueType          string         `json:"valueType,omitempty"` // 值类型
