@@ -1,6 +1,7 @@
 package resources
 
 import (
+	"fmt"
 	"github.com/goal-web/application"
 	"github.com/goal-web/contracts"
 	"github.com/goal-web/database/table"
@@ -75,6 +76,13 @@ func (base Base) Delete(id int) contracts.Exception {
 func (base Base) Update(id int, fields contracts.Fields) contracts.Exception {
 	_, err := table.ArrayQuery(base.Name).Where(base.RowKey, id).UpdateE(fields)
 	return err
+}
+
+func (base Base) Values(value, label string) contracts.Collection[*contracts.Fields] {
+	return table.ArrayQuery(base.Name).
+		GroupBy(value, label).
+		Select(fmt.Sprintf("%s as value", value), fmt.Sprintf("%s as label", label)).
+		Get()
 }
 
 func (base Base) Query(params ResourceQueryParams) (contracts.Collection[*contracts.Fields], int64) {

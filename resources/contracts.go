@@ -70,6 +70,7 @@ type Resource interface {
 	GetMeta() (*ProTableProps, contracts.Exception)
 	Delete(id int) contracts.Exception
 	Update(id int, fields contracts.Fields) contracts.Exception
+	Values(value, label string) contracts.Collection[*contracts.Fields]
 	Query(params ResourceQueryParams) (contracts.Collection[*contracts.Fields], int64)
 }
 
