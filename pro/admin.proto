@@ -1,0 +1,140 @@
+syntax = "proto3";
+
+option go_package = "admin";
+
+// 管理员角色枚举
+enum AdminRole {
+  //@msg:超级管理员
+  super_admin = 0;
+  //@msg:运营管理员
+  operator = 1;
+  //@msg:查看者
+  viewer = 2;
+}
+
+// 管理员短信类型（仅定义，不在本文件中使用）
+enum AdminSmsType {
+  //@msg:登录
+  login = 0;
+  //@msg:重置密码
+  reset = 1;
+}
+
+// 管理员登录方式（仅定义，不在本文件中使用）
+enum LoginMethod {
+  //@msg:密码登录
+  password = 0;
+  //@msg:短信登录
+  sms = 1;
+}
+
+// 管理员模型
+//@authenticatable
+//@table: admins
+//@timestamps
+message AdminModel {
+  //@goTag:title:"标识"
+  int64 id = 1;
+
+  //@unique
+  //@goTag:db:"username;type:varchar(32)" title:"账号"
+  string username = 2;
+
+  //@goTag:title:"昵称"
+  string nickname = 3;
+  //@goTag:valueType:"image" title:"头像"
+  string avatar = 4;
+
+  //@index
+  //@goTag:db:"email;type:varchar(60)" title:"邮箱"
+  string email = 5;
+
+  //@unique
+  //@goTag:db:"phone;type:varchar(11)" title:"手机号"
+  string phone = 6;
+
+  //@index
+  //@goTag:db:"role;type:varchar(20)" valueType:"select" valueEnum:"super:超级管理员;admin:管理员;viewer:查看者;" title:"角色"
+  string role = 7;
+
+  //@hidden
+  //@goTag:valueType:"password" title:"密码" hideInTable:"true" hideInSearch:"true"
+  string password = 9;
+
+  //@goTag:valueType:"dateTime" title:"创建时间"  sorter:"true"
+  string created_at = 100;
+  //@goTag:valueType:"dateTime" title:"更新时间" hideInSearch:"true" sorter:"true" hideInTable:"true"
+  string updated_at = 101;
+}
+
+message LoginReq {
+  string username = 1;
+  string password = 2;
+  string phone = 3;
+  string code = 4; // 短信验证码（手机号登录与重置密码使用）
+}
+
+message LoginResult {
+  string token = 1;
+  AdminModel admin = 2;
+}
+
+//@controller:/api/admin
+//@hook
+service AuthService {
+  //@path:/login
+  rpc Login(LoginReq) returns (LoginResult);
+
+  //@path:/send-sms
+  rpc SendSms(SendSmsReq) returns (SendSmsResult);
+
+  //@path:/captcha
+  //@method:GET
+  rpc GetCaptcha(GetCaptchaReq) returns (GetCaptchaResult);
+
+  //@path:/reset-password
+  rpc ResetPassword(ResetPasswordReq) returns (ResetPasswordResult);
+
+  //@path:/current-user
+  //@method:GET
+  //@middleware:auth:admin_jwt
+  rpc GetCurrentUser(GetCurrentUserReq) returns (GetCurrentUserResult);
+}
+
+
+message SendSmsReq {
+  string phone = 1;
+  string type = 2; // login, reset
+  string captcha_id = 3; // 图形验证码ID
+  string captcha_code = 4; // 图形验证码内容
+}
+
+message SendSmsResult {
+  bool success = 1;
+  string message = 2;
+}
+
+message GetCaptchaReq {}
+
+message GetCaptchaResult {
+  string captcha_id = 1;
+  string image_base64 = 2; // data:image/svg+xml;base64,...
+}
+
+message ResetPasswordReq {
+  string phone = 1;
+  string code = 2;
+  string new_password = 3;
+}
+
+message ResetPasswordResult {
+  bool success = 1;
+  string message = 2;
+}
+
+// 获取当前管理员
+message GetCurrentUserReq {}
+
+message GetCurrentUserResult {
+  AdminModel admin = 1;
+}

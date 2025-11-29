@@ -1,0 +1,94 @@
+syntax = "proto3";
+
+option go_package = "admin";
+
+// 管理员管理服务（针对 AdminModel），支持列表与删除
+// 角色约束：仅 super 可以删除 admin 角色的管理员，禁止删除 super
+
+// 列表查询请求
+message ListAdminsReq {
+  int32 current = 1;     // 页码，从 1 开始
+  int32 page_size = 2;   // 每页数量
+  string username = 3;   // 账号筛选
+  string nickname = 4;   // 昵称筛选
+  string phone = 5;      // 手机筛选
+  string email = 6;      // 邮箱筛选
+}
+
+// 列表项（展示字段）
+message AdminItem {
+  //@goTag:title:"标识"
+  int64 id = 1;
+  //@goTag:title:"账号"
+  string username = 2;
+  //@goTag:title:"昵称"
+  string nickname = 3;
+  //@goTag:valueType:"image" title:"头像"
+  string avatar = 4;
+  //@goTag:title:"手机号"
+  string phone = 5;
+  //@goTag:title:"邮箱"
+  string email = 6;
+  //@goTag:valueType:"select" title:"角色"
+  string role = 7; // super / admin
+  //@goTag:valueType:"dateTime" title:"创建时间"
+  string created_at = 100;
+  //@goTag:valueType:"dateTime" title:"更新时间" hideInSearch:"true" hideInTable:"true"
+  string updated_at = 101;
+}
+
+message ListAdminsResult {
+  int32 total = 1;
+  repeated AdminItem list = 2;
+}
+
+// 删除管理员
+message DeleteAdminReq { int64 id = 1; }
+message DeleteAdminResult { bool success = 1; string message = 2; }
+
+// 创建管理员
+message CreateAdminReq {
+  string username = 1;   // 账号，必填，唯一
+  string nickname = 2;   // 昵称，可选
+  string avatar = 3;     // 头像，可选
+  string phone = 4;      // 手机号，必填，唯一
+  string email = 5;      // 邮箱，可选
+  string role = 6;       // 角色：super/admin，默认 admin
+  string password = 7;   // 密码，必填
+}
+message CreateAdminResult { bool success = 1; string message = 2; }
+
+//@controller:/api/admin
+//@hook
+//@middleware:auth:admin_jwt
+service AdminManageService {
+  //@path:/admins
+  //@method:GET
+  rpc ListAdmins(ListAdminsReq) returns (ListAdminsResult);
+
+  //@path:/admin/delete
+  //@method:POST
+  rpc DeleteAdmin(DeleteAdminReq) returns (DeleteAdminResult);
+
+  //@path:/admin/create
+  //@method:POST
+  rpc CreateAdmin(CreateAdminReq) returns (CreateAdminResult);
+
+  //@path:/admin/update
+  //@method:POST
+  rpc UpdateAdmin(UpdateAdminReq) returns (UpdateAdminResult);
+}
+
+// 更新管理员（仅 super 可修改其他管理员），密码可选
+message UpdateAdminReq {
+  int64 id = 1;         // 目标管理员ID，必填
+  string username = 2;   // 账号，可选，需唯一
+  string nickname = 3;   // 昵称，可选
+  string avatar = 4;     // 头像，可选
+  string phone = 5;      // 手机号，可选，需唯一
+  string email = 6;      // 邮箱，可选
+  string role = 7;       // 角色：super/admin，可选
+  string password = 8;   // 新密码，可选；为空不更新
+}
+
+message UpdateAdminResult { bool success = 1; string message = 2; }

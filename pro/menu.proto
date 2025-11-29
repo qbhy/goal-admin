@@ -1,0 +1,31 @@
+syntax = "proto3";
+
+option go_package = "admin";
+
+// 管理端菜单/路由定义
+message Menu {
+  string name = 1;         // 菜单名称
+  string path = 2;         // 对应页面路由路径
+  string icon = 3;         // 图标 key（与前端一致）
+  bool hideInMenu = 4;     // 是否在菜单中隐藏
+  string access = 5;       // 访问权限标识（前端 access 插件使用）
+  //@ptr
+  repeated Menu children = 6; // 子菜单
+}
+
+// 请求（当前无需入参，预留扩展）
+message MenuListReq {}
+
+// 返回菜单列表
+message MenuListResult {
+  repeated Menu menus = 1;
+}
+
+//@controller:/api/admin
+//@hook
+//@middleware:auth:admin_jwt
+service MenuService {
+  //@path:/menu
+  //@method:GET
+  rpc GetMenu(MenuListReq) returns (MenuListResult);
+}

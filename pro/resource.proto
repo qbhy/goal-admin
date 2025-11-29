@@ -1,0 +1,226 @@
+syntax = "proto3";
+
+// 通用资源管理服务：定义资源的 Meta、列表、详情、增删改、批量删除与导出接口
+// 与管理员端保持一致使用 admin 包名。
+option go_package = "admin";
+
+import "pro/common.proto";
+
+// 查询操作符（仅定义，不在本文件中使用）
+enum QueryOperator {
+  //@msg:等于
+  eq = 0;
+  //@msg:模糊匹配
+  like = 1;
+  //@msg:大于
+  gt = 2;
+  //@msg:小于
+  lt = 3;
+  //@msg:包含
+  in = 4;
+}
+
+// 排序方向（仅定义，不在本文件中使用）
+enum SortOrder {
+  //@msg:升序
+  asc = 0;
+  //@msg:降序
+  desc = 1;
+}
+
+// 列类型（用于前端展示；仅定义，不在本文件中使用）
+enum ColumnValueType {
+  //@msg:文本
+  text = 0;
+  //@msg:日期时间
+  dateTime = 1;
+  //@msg:头像
+  avatar = 2;
+  //@msg:链接
+  url = 3;
+  //@msg:图片
+  image = 4;
+  //@msg:数字
+  number = 5;
+  //@msg:选择
+  select = 6;
+}
+
+enum ActionType {
+  //@msg:展示
+  show = 0;
+  //@msg:编辑
+  edit = 1;
+  //@msg:删除
+  delete = 2;
+  //@msg:批量删除
+  batchDelete = 3;
+  //@msg:导出
+  export = 4;
+  //@msg:创建
+  create = 5;
+}
+
+// 通用查询结构
+message QueryParam {
+  string key = 1;
+  Any value = 2;
+  string operator = 3; // 如 eq, like, gt, lt, in
+}
+message Sorter {
+  string field = 1; // 排序字段
+  string order = 2; // asc / desc
+}
+
+message QueryParams {
+  int64 page = 1;
+  int64 pageSize = 2;
+  repeated Sorter sorters = 3;
+  repeated QueryParam params = 4;
+  string keyword = 5;
+}
+
+message ForeignKey {
+  string model = 1;
+  string keyField = 2;
+  string labelField = 3;
+  bool multiple = 4;
+  string foreignKey = 5; // 外键字段名
+}
+
+// 资源列定义（用于前端 ProTable 渲染）
+message ResourceColumn {
+  string title = 1;
+  string dataIndex = 2;
+  string valueType = 3; // text, dateTime, avatar, etc.
+  int32 width = 4;
+  bool hideInSearch = 5;
+  bool hideInTable = 6;
+  bool sorter = 7;
+  Any valueEnum = 8;
+  //@ptr
+  ForeignKey  foreignKey = 9;
+  repeated ResourceColumn columns = 10;
+  bool hideInForm = 11;
+  Any initialValue = 12;
+  bool multiple = 13;
+  int64 order = 14;
+}
+
+// 资源元数据结构（与后端 resources.ResourceMeta 对齐）
+message ResourceMeta {
+  string title = 1;
+  string name = 2;
+  repeated ResourceColumn columns = 3;
+  string rowKey = 9;
+
+  bool exportable = 4;
+  bool deleteable = 5;
+  bool creatable = 6;
+  bool updatable = 7;
+  bool copyable = 8;
+
+  repeated ActionMeta actions = 10;
+}
+
+message ActionMeta {
+  string name = 1;
+  repeated ResourceColumn columns = 2;
+  bool batch = 3;
+}
+
+// 获取资源元数据（返回 ResourceMeta 完整结构）
+message GetResourceMetaReq {string model = 1;}
+message GetResourceMetaResult {
+  ResourceMeta meta = 1;
+}
+
+// 列表
+message ListResourceReq {string model = 1; QueryParams query = 2;}
+message ListResourceResult {int64 total = 1; repeated Any list = 2;}
+
+// 详情
+message GetResourceDetailReq {string model = 1; int64 id = 2;}
+message GetResourceDetailResult {Any item = 1;}
+
+// 新建
+message CreateResourceReq {string model = 1; Any fields = 2;}
+message CreateResourceResult {int64 id = 1;}
+
+// 更新
+message UpdateResourceReq {string model = 1; int64 id = 2; Any fields = 3;}
+message UpdateResourceResult {bool success = 1; string message = 2;}
+
+// 删除
+message DeleteResourceReq {string model = 1; int64 id = 2;}
+message DeleteResourceResult {bool success = 1; string message = 2;}
+
+// 批量删除
+message BatchDeleteResourceReq {string model = 1; repeated int64 ids = 2;}
+message BatchDeleteResourceResult {bool success = 1; int64 count = 2; string message = 3;}
+
+// 批量获取字段
+message BatchFetchFieldsReq {
+  string model = 1;
+  repeated string keys = 2;
+  string keyField = 3;
+  string  labelField = 4;
+}
+message BatchFetchFieldsResult {MapStringAny fields = 1;}
+
+
+// 导出（异步），返回导出记录ID与当前状态/链接（可能为空）
+message ExportResourceReq {string model = 1; QueryParams query = 2;}
+message ExportResourceResult {int64 export_id = 1; string status = 2; string url = 3;}
+
+message ResourceActionReq {
+  string model = 1;
+  string action = 2;
+  string payload = 3;
+}
+message ResourceActionResult {Any result = 1;}
+
+//@controller:/api/admin
+//@hook
+//@middleware:auth:admin_jwt
+service ResourceService {
+  //@path:/resource/meta
+  //@method:GET
+  rpc GetResourceMeta(GetResourceMetaReq) returns (GetResourceMetaResult);
+
+  //@path:/resource/list
+  //@method:POST
+  rpc ListResource(ListResourceReq) returns (ListResourceResult);
+
+  //@path:/resource/detail
+  //@method:GET
+  rpc GetResourceDetail(GetResourceDetailReq) returns (GetResourceDetailResult);
+
+  //@path:/resource/create
+  //@method:POST
+  rpc CreateResource(CreateResourceReq) returns (CreateResourceResult);
+
+  //@path:/resource/update
+  //@method:POST
+  rpc UpdateResource(UpdateResourceReq) returns (UpdateResourceResult);
+
+  //@path:/resource/delete
+  //@method:POST
+  rpc DeleteResource(DeleteResourceReq) returns (DeleteResourceResult);
+
+  //@path:/resource/batch-delete
+  //@method:POST
+  rpc BatchDeleteResource(BatchDeleteResourceReq) returns (BatchDeleteResourceResult);
+
+  //@path:/resource/export
+  //@method:POST
+  rpc ExportResource(ExportResourceReq) returns (ExportResourceResult);
+
+  //@path:/resource/batch-fetch-fields
+  //@method:POST
+  rpc BatchFetchFields(BatchFetchFieldsReq) returns (BatchFetchFieldsResult);
+
+  //@path:/resource/action
+  //@method:POST
+  rpc ResourceAction(ResourceActionReq) returns (ResourceActionResult);
+}

@@ -1,0 +1,44 @@
+syntax = "proto3";
+
+option go_package = "admin";
+
+import "pro/resource.proto";
+import "pro/common.proto";
+
+// 导出状态（仅定义，不在本文件中使用）
+enum ExportStatus {
+  //@msg:排队中
+  pending = 0;
+  //@msg:处理中
+  processing = 1;
+  //@msg:已完成
+  completed = 2;
+  //@msg:处理失败
+  failed = 3;
+}
+
+// 导出数据
+//@table: exports
+//@timestamps
+message ExportModel {
+  //@goTag:title:"标识"
+  int64 id = 1;
+
+  //@goTag:title:"管理员" hideInSearch:"true" hideInForm:"true" hideInTable:"true"
+  uint64 admin_id = 2;
+  //@goTag:valueType:"url" title:"下载地址" hideInSearch:"true"
+  string url = 3;
+  //@goTag:valueType:"select" valueEnum:"pending:排队中,processing:处理中,completed:已完成,failed:处理失败" title:"状态"
+  string status = 4;
+  //@goTag:title:"资源"
+  string resource = 5;
+  //@goTag:title:"参数" hideInTable:"true" hideInSearch:"true" hideInForm:"true"
+  QueryParams params = 6;
+
+
+
+  //@goTag:valueType:"dateTime" title:"创建时间"
+  string created_at = 100;
+  //@goTag:valueType:"dateTime" title:"更新时间" hideInSearch:"true" hideInTable:"true"
+  string updated_at = 101;
+}

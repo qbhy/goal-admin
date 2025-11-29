@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+option go_package = "admin";
+
+message SiteConfigResult {
+  string title = 1;
+  string logo = 2;
+  string footer = 3;
+}
+
+message GetSiteConfigReq {}
+
+//@controller:/api/admin
+//@hook
+service SiteService {
+  //@path:/site
+  //@method:GET
+  rpc GetSiteConfig(GetSiteConfigReq) returns (SiteConfigResult);
+}
+
