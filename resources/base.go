@@ -93,6 +93,47 @@ func sortColumnsRec(cols []admin.ResourceColumn) []admin.ResourceColumn {
 	return cols
 }
 
+func Basic[T any](title string, query func() *table.Table[T]) *Base {
+	queryInstance := query()
+	var item T
+	r := Base{
+		Title:      title,
+		Name:       queryInstance.GetTableName(),
+		RowKey:     queryInstance.GetPrimaryKeyField(),
+		Exportable: true,
+		Deleteable: true,
+		Creatable:  true,
+		Updatable:  true,
+		Copyable:   true,
+		Columns:    utils.GenerateColumnsFromStruct(item),
+	}
+
+	r.Query = BuildQuery(query)
+	r.FindHandler = func(id int) (any, error) {
+		return query().FindOrFail(int64(id)), nil
+	}
+
+	r.DeleteHandler = func(id int) error {
+		_, err := query().Where(queryInstance.GetPrimaryKeyField(), "=", id).DeleteE()
+		return err
+	}
+
+	r.BatchDeleteHandler = func(ids []int) error {
+		_, err := query().WhereIn(queryInstance.GetPrimaryKeyField(), ids).DeleteE()
+		return err
+	}
+
+	r.CreateHandler = func(fields contracts.Fields) (any, error) {
+		return query().Create(fields), nil
+	}
+
+	r.UpdateHandler = func(id int, fields contracts.Fields) (any, error) {
+		return query().Where(queryInstance.GetPrimaryKeyField(), "=", id).UpdateE(fields)
+	}
+
+	return &r
+}
+
 func (b Base) Can(admin *models.AdminModel, action string) bool {
 	if b.PermissionHandler != nil {
 		return b.PermissionHandler(admin, action)

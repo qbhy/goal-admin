@@ -65,10 +65,6 @@ func BuildQuery[T any](queryProvider func() *table.Table[T]) QueryFunction {
 	}
 }
 
-type Getter interface {
-	Get(key string) any
-}
-
 // HasFields 判断在 QueryParams 中是否同时存在指定的参数 key 列表。
 // 使用示例：HasFields(params, "status", "id")
 // 规则：当 fields 为空时返回 true；当任意一个 key 不存在时返回 false。
