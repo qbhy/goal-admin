@@ -33,8 +33,14 @@ type ServiceProvider struct {
 }
 
 func (s ServiceProvider) Register(application contracts.Application) {
-	application.Singleton("resources", func() Factory {
-		return Default()
+	application.Singleton("resources", func(config contracts.Config) Factory {
+		f := Default()
+
+		for _, resource := range config.Get("admin").(Config).Resources {
+			f.Register(resource)
+		}
+
+		return f
 	})
 	s.app = application
 }

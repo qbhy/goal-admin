@@ -11,7 +11,7 @@ import defaultSettings from '../config/defaultSettings';
 import {errorConfig} from './requestErrorConfig';
 import '@ant-design/v5-patch-for-react-19';
 import './tailwind-output.css'
-import logo from '@/logo.jpg';
+import logo from '@/logo.png';
 
 // 配置 dayjs 使用 +8 时区
 // dayjs.extend(utc);

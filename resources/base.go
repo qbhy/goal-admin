@@ -124,7 +124,7 @@ func Basic[T any](title string, query func() *table.Table[T]) *Base {
 	}
 
 	r.CreateHandler = func(fields contracts.Fields) (any, error) {
-		return query().Create(fields), nil
+		return query().CreateE(fields)
 	}
 
 	r.UpdateHandler = func(id int, fields contracts.Fields) (any, error) {

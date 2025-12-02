@@ -21,7 +21,7 @@ import { flushSync } from 'react-dom';
 import { Footer } from '@/components';
 import { login } from '@/services/ant-design-pro/api';
 import Settings from '../../../../config/defaultSettings';
-import logo from '@/logo.jpg';
+import logo from '@/logo.png';
 
 const useStyles = createStyles(({ token }) => {
   return {
