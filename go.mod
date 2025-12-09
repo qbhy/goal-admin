@@ -2,7 +2,7 @@ module github.com/qbhy/goal-admin
 
 go 1.25.3
 
-replace github.com/goal-web/goal-cli => ../../go/goal-web/goal-cli
+//replace github.com/goal-web/goal-cli => ../../go/goal-web/goal-cli
 
 require (
 	github.com/goal-web/application v0.5.6

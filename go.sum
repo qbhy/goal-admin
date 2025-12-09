@@ -55,6 +55,7 @@ github.com/goal-web/database v0.5.7 h1:JG3pvqVOdFzS2+vBKt7YETjxHxZTgY38jXzm8Yewv
 github.com/goal-web/database v0.5.7/go.mod h1:2JUzNn8ciRg3Z+Ru9MD8y9LmkWVRjtaXhg7qjZtc9jE=
 github.com/goal-web/filesystem v0.5.6 h1:NvP7SZ2RxODpeU5vvCOQxKwcUbMZM6Q8y6NHdtsX3Og=
 github.com/goal-web/filesystem v0.5.6/go.mod h1:Sqy3D1+/Y9NeNyzRdu14V6FHUvApEu9JF4dftVE2eNo=
+github.com/goal-web/goal-cli v0.5.48/go.mod h1:uG6qVeQV4GKvDPaBPS5NP83KFWabkRYCpL6hJ1Eon4Y=
 github.com/goal-web/migration v0.5.11 h1:fjd1EZxKltyprIY0FroXE4l1vH9QGz+6FdVbiIMqxEY=
 github.com/goal-web/migration v0.5.11/go.mod h1:isse3f0IOOOI9Zm7M+5fkOTpFHLOLHhcgfsSq+Xjyi4=
 github.com/goal-web/querybuilder v0.5.6 h1:Xv4+KO59B/JhTkEwNASKd/wfbJ8LrnwtLa81Boeqt64=
